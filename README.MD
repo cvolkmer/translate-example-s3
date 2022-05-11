@@ -73,7 +73,7 @@ def lambda_handler(event, context):
 1. Under **Configuration** click on the **Role name** which will open a new windows in IAM
 
 ### IAM Configuration
-The Lambda function comes with a pre-created IAM policy that allows to write log files to CloudWatch Logs. But the function needs also to a/ read from the S3 bucket and b/ detect which language has been selected and c/ translate the payload via Amazon Translate and d/ send the translated text via Amazon SNS. Because of the principle of least priviledge, we need to explicitely allow the Lambda function access to these services. Due to simplicity, we consolidate these actions in one additional IAM policy.
+The Lambda function comes with a pre-created IAM policy that allows to write log files to CloudWatch Logs. But the function needs also to a/ read from the S3 bucket, b/ detect which language has been selected, c/ translate the payload via Amazon Translate and d/ send the translated text via Amazon SNS. Because of the principle of least priviledge, we need to explicitely allow the Lambda function access to these services and resources. Due to simplicity, we consolidate these actions in one additional IAM policy.
 
 **Create IAM policy**
 - Click on **Add permissions** and **Create inline policy** to allow your Lambda function to read from your S3 bucket
