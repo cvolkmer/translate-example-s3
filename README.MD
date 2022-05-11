@@ -1,5 +1,7 @@
 ## Serverless translation example
+This example demonstrated the capabilities and benefits of managed services on AWS. The solution described below is a very simple example and will lead to the following architecture:
 
+![Architecture](translation-example.png "Architecture")
 ### Create S3 Bucket
 1. Create an empty bucket with default values
 
