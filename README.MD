@@ -15,10 +15,11 @@ This example demonstrated the capabilities and benefits of managed services on A
 
 ### Lambda function
 1. Create new Lambda function (Author from scratch)
-1. Choose a name and Runtime select **Python 3.8** and create function
+1. Choose a name, for Runtime select **Python 3.8** and create the function
 1. Replace existing function code and deploy the Lambda function:
+1. Review the Python code to understand what's supposed to happen during the invocation
 
-```
+```python
 import boto3
 import logging
 import os
@@ -107,7 +108,7 @@ The Lambda function comes with a pre-created IAM policy that allows to write log
 You should now have 3 inline IAM policies in the IAM role and if you look at the JSON file, it should look similar to this one (as example)
 
 
-```
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -130,6 +131,5 @@ You should now have 3 inline IAM policies in the IAM role and if you look at the
 }
 ```
 
-
 ### Translate an example text
-Create an example text (small sentence) in English and store it locally. Go back to S3, browse to your bucket and upload or drag/drop your file into your bucket. You should receive a translation of that text shortly after via E-Mail
+Create an example text (small sentence) in English in text editor and store it locally. Go back to S3, browse to your bucket and upload or drag/drop your file into your bucket. You should receive a translation of that text shortly after via E-Mail.
