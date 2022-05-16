@@ -124,8 +124,14 @@ You should now have 3 inline IAM policies in the IAM role and if you look at the
         {
             "Sid": "VisualEditor1",
             "Effect": "Allow",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::yourbucketname/*"
+            "Action": [
+                "s3:GetObject",
+                "sns:Publish"
+            ],
+            "Resource": [
+                "arn:aws:sns:<your-region>:<your-account>:<cour-topic>",
+                "arn:aws:s3:::/<your-bucket>/*"
+            ]
         }
     ]
 }
