@@ -15,8 +15,8 @@ This example demonstrated the capabilities and benefits of managed services on A
 
 ### Lambda function
 1. Create new Lambda function (Author from scratch)
-1. Choose a name, for Runtime select **Python 3.8** and create the function
-1. Replace existing function code and deploy the Lambda function:
+1. Choose a name, for Runtime select **Python 3.9** and create the function
+1. Replace existing function code and **deploy** the Lambda function
 1. Review the Python code to understand what's supposed to happen during the invocation
 
 ```python
@@ -129,8 +129,8 @@ You should now have 3 inline IAM policies in the IAM role and if you look at the
                 "sns:Publish"
             ],
             "Resource": [
-                "arn:aws:sns:<your-region>:<your-account>:<cour-topic>",
-                "arn:aws:s3:::/<your-bucket>/*"
+                "arn:aws:sns:<your-region>:<your-account>:<your-topic>",
+                "arn:aws:s3:::<your-bucket-name>/*"
             ]
         }
     ]
