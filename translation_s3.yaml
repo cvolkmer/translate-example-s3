@@ -1,0 +1,147 @@
+Parameters: 
+
+  EMailAddress: 
+    Type: String
+    Description: Please enter an E-Mail address where you want to receive the translated text.
+
+  S3BucketName:
+    Type: String
+    Description: Please enter a unique S3 Bucket name.
+
+Resources:
+
+# Create a SNS Topic with an E-Mail subsription
+  TranslateSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: !Ref EMailAddress
+          Protocol: "email"
+#      TopicName: "Translate"
+
+# Lambda function that processes the uploaded file in S3, translates it and send it to the E-Mail address specified above
+  TranslateAndSend:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Python Function Handler
+      Handler: index.lambda_handler
+      Runtime: python3.10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          sns_topic: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${TranslateSNSTopic.TopicName}'
+      Code:
+        ZipFile: |
+          import boto3
+          import logging
+          import os
+
+          # Clients
+          s3 = boto3.client('s3')
+          translate = boto3.client('translate')
+          sns = boto3.client('sns')
+
+          # Configure logger
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          def lambda_handler(event, context):
+              logger.info('Raw Event: {}'.format(event))
+              print(event)
+              
+              # Extract Bucket- and Object names from Event Information
+              bucket_name = event['Records'][0]['s3']['bucket']['name']
+              object_name = event['Records'][0]['s3']['object']['key']
+
+              # Get the object from S3
+              fileobj = s3.get_object(
+                  Bucket=bucket_name,
+                  Key=object_name
+              ) 
+              
+              # Open the file object and read it into the variable filedata. 
+              filedata = fileobj['Body'].read()
+              
+              # file data will be a binary stream.  We have to decode it and store it as string
+              content = str(filedata.decode('utf-8'))
+
+              # Send content from the input file to AWS translate
+              response_translate = translate.translate_text(
+                  Text=content,
+                  SourceLanguageCode='auto',
+                  TargetLanguageCode='de'
+              )
+              
+              # Send the translated text as SMS to a recipient
+              response_sns = sns.publish(
+                  TopicArn=os.environ['sns_topic'],
+                  Message=response_translate['TranslatedText']
+              )
+              
+              return {
+                  'statusCode': 200,
+                  'body': response_sns
+              }
+    DependsOn: TranslateSNSTopic
+
+# Lambda invocation from S3 bucket event
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref TranslateAndSend
+      Action: 'lambda:InvokeFunction'
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !Sub 'arn:aws:s3:::${S3BucketName}'
+
+# IAM role that allows Lambda to specific functions of the translation service as well as read access to the S3 bucket
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: Translate-Policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                  - s3:GetObject
+                Resource:
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${TranslateSNSTopic.TopicName}'
+                  - !Sub 'arn:aws:s3:::${S3BucketName}/*'
+              - Effect: Allow
+                Action:
+                  - comprehend:DetectDominantLanguage
+                  - translate:TranslateText
+                Resource:
+                  - '*'
+
+# Creation of the S3 bucket where you can upload your raw test.
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Function: !GetAtt TranslateAndSend.Arn
+
+
+Outputs:
+
+# Displays the bucket name of your S3 bucket in the CloudFormation outputs section so you can easier find the name
+  SourceBucket:
+    Description: Your S3 Bucket to store your text to be translated
+    Value: !Ref SourceBucket
