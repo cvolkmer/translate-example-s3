@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         TargetLanguageCode='de'
     )
     
-    # Send the translated text as SMS to a recipient
+    # Send the translated text to the topic recipient
     response_sns = sns.publish(
         TopicArn=os.environ['sns_topic'],
         Message=response_translate['TranslatedText']
