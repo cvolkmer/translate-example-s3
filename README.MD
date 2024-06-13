@@ -15,7 +15,7 @@ This example demonstrated the capabilities and benefits of managed services on A
 
 ### Lambda function
 1. Create new Lambda function (Author from scratch)
-1. Choose a name, for Runtime select **Python 3.11** and create the function
+1. Choose a name, for Runtime select **Python 3.12** and create the function
 1. Replace existing function code and **deploy** the Lambda function
 1. Review the Python code to understand what's supposed to happen during the invocation
 
